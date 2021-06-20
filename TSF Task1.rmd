@@ -1,0 +1,241 @@
+---
+title: "The Sparks Foundation GRIPJUNE Task #4"
+author: "Roel George"
+date: "09/06/2021"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+# Exploratory Data Analysis on the Global Terrorism Dataset
+
+## Getting Started  
+```{r warning=FALSE, message=FALSE}
+# Installing the required packages needed for the Exploratory data anlysis 
+
+#install.packages("ggplot2")
+#install.packages("dplyr")
+#install.packages("ggmap")
+#install.packages("plotly")
+#install.packages("pacman")
+#install.packages("scales")
+
+# Calling the installed packages
+library("scales")
+library("plotly")
+library("ggplot2")
+library("dplyr")
+library("ggmap")
+library("pacman")
+```
+
+
+## Importing and Cleaning Data.  
+
+```{r warning=FALSE, message=FALSE}
+
+# Reading the Global Terrorism data.
+global_terrorism<-read.csv("globalterrorismdb_0718dist.csv")
+# Looking at the dimensions of the global_terrorism data
+dim(global_terrorism)
+# We see that it has 181691 rows and 135 columns, but since most of it is not of much use,
+# we create a cleaner data frame consisting of the most usable data.
+clean<-global_terrorism[c("iyear","country_txt","city","summary","attacktype1_txt","targtype1_txt","success","gname","weaptype1_txt","propextent_txt","longitude","latitude")]
+# Removing the NA values form the clean dataset.
+clean<-na.omit(clean)
+# Summary and head of the clean data.
+summary(clean)
+head(clean)
+
+```
+### Observation:  
+The 'iyear' column shows the year when an terrorism incident occurred. The provided data has recorded global terrorism activities starting form the year 1970 till 2017.  <br/>
+The 'country_txt' column shows the country where the incident accurred. We have a total 204 countries in the cleaned dataset.  <br/>
+The 'city' column shows the city in which the incident accurred.  <br/>
+The 'summary' column shows the short summany(headline) on the incident for few of the rows in the dataset.  <br/>
+The 'attacktype1_txt' column shows type of attack which took place.The types of attack are categorized into 9 types.   <br/>
+The 'targtype1_txt' column shows the group of individuals on whom the attack was targeted. There are 22 targeted groups in the cleaned dataset.  <br/>
+The 'success' column indicates weather the attack was successful or not.  <br/>
+The 'weaptype1_txt' column shows the kind of weapons used for the attack.It is classified into 12 groups.  <br/>
+The 'gname' column shows the group of people who carried out the act of terrorism.  <br/>
+The 'propextent_txt' column shows the amount of property damage(capital) occurred. It is broadly classified into 4 groups.  <br/>  
+
+## Observing the year data according to different factors 
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+
+# Creating a box-plot of the year data based on the attack type.  
+plot1<-plot_ly(y=clean$iyear,color=clean$attacktype1_txt,type="box",title="Boxlplot of the year data as a factor of Attack type.")
+plot1
+
+# Creating a box-plot of the year data based on the target type.  
+plot2<-plot_ly(y=clean$iyear,color=clean$targtype1_txt,type="box",title="Boxlplot of the year data as a factor of Target type.")
+plot2
+
+# Creating a box-plot of the year data based on the weapon type. 
+plot9<-plot_ly(y=clean$iyear,color=clean$weaptype1_txt,type="box",title="Boxlplot of the year data as a factor of Weapon type.")
+plot9 %>% layout(showlegend = FALSE)
+```  
+
+### Observation:  
+We observe how the behavior of different types of global terrorism attacks, using diffent weapon types , targeting different groups of individuals changed over the years.
+
+## A Frequency distribution of acts of terrorism across different parts of the globe.
+```{r echo=FALSE}
+# Creating a ggplot and storing it in a variable called plot3.
+plot3<-ggplot()+
+  geom_bar(data=clean,
+                 aes(x=(country_txt),fill=as.factor(success)),
+                 stat = "count"
+                 )+
+# Changing the element size of the labels 
+  theme(axis.text.x = element_text(angle=90,size =4),
+        legend.title = element_text(size=1))+
+# Adding title and xlab ad ylab
+  labs(
+    title = "Country wise distribution of terrorism count",
+    x="Country",
+    y="frequency"
+  )
+# Calling the plot3 as a plotly graph.
+ggplotly(plot3)
+
+```  
+
+<br/>  
+
+### Observations:  
+
+From this plot we observe that (in the given dataset) the Iraq is the county with maximum number of successful terrorist attacks. Iraq is followed by Pakistan, Afghanistan and India. 
+
+## Observing the trend of golbal terorism from 1970-2017
+
+```{r echo=FALSE}
+# Creating a plot and storing it in a variable called plot4.
+plot4<-ggplot()+
+  geom_line(data=clean,col="#5ab4ac",
+                 aes(x=(iyear)),
+                 stat = "count")+
+  geom_point(
+    data=clean,col="#5ab4ac",
+                 aes(x=(iyear)),
+                 stat = "count"
+  )+
+# Changing the labels of the plot and aadding the title.
+  labs(
+    x="year",
+    y="count",
+    title = "Frequency distriution of the total years."
+  )+
+  theme(legend.title = element_blank())
+# Calling plot4 as a plotly graph.
+ggplotly(plot4)
+
+# Creating a plot and storing it in a variable called plot5.
+plot5<-ggplot()+
+  geom_histogram(data=clean,
+                 aes(x=(iyear),fill=as.factor(attacktype1_txt)),
+                 stat = "count")+
+# Adding facets.
+  facet_wrap(as.factor(clean$attacktype1_txt))+
+# Removing the legends.
+  theme(legend.position = "none")+
+# Adding x and y labels and title.
+  labs(
+    x="year",
+    y="count",
+    title = "Distribution of various types of attacks throught the years."
+  )
+# Calling plot5 as a plotly graph
+ggplotly(plot5)
+
+```  
+
+<br/>  
+
+### Observations:  
+
+Through the 1st line-plot, we observe that there is a steady increase the number of terrorism activities (note: the data got the year 1993 is missing), followed by a relative decrease an then again followed by a sharp increase till the year 2014.  <br/>
+Note: the behavior of the plot depends on multiple factors like world population and the accuracy of the recorded data and hence one shouldn't consider this as te only determining factor.  <br/>
+
+We see that almost a similar trend is observed for the attack type in the 2nd plot in the chunk.  <br/>  
+
+## Observing Percent count of various Attack Type.
+
+```{r echo=FALSE}
+# Creating a variable h and storing the plot data (create using ggplot_build()) inside it . 
+h<-ggplot()+
+  geom_bar(data=clean,
+           aes(x=(attacktype1_txt),fill=as.factor(attacktype1_txt)),
+           stat = "count",
+           col="black",width=1)
+h<-ggplot_build(h)
+h<-h$data[[1]]
+# Adding the percent count of each of the row of the data in a new column.
+h$perc<-h$count*100/sum(h$count)
+# Adding a column containing the label for each of the groups.
+h$label<-levels(as.factor(clean$attacktype1_txt))
+
+# Using the a above create dataset to plot a plotly pie chart.
+plot6<-plot_ly( data =h , labels =h$label , values =h$perc , type = "pie", textinfo = "label+percent", insidetextorientation = "radial",title="Pie Chart on the distribution of Attack Type")
+plot6
+
+```  
+
+<br/>  
+
+### Observations:  
+
+The most common type of terrorism attack is Bombing/Explosion taking up almost half the pie followed by Armed Assault and Assasination.  
+
+## Observing Percent count of various Target Type.  
+
+```{r echo=FALSE}
+# Creating a variable f and storing the plot data (create using ggplot_build()) inside it . 
+f<-ggplot()+
+  geom_bar(data=clean,
+           aes(x=(targtype1_txt),fill=as.factor(targtype1_txt)),
+           stat = "count",
+           col="black",width=1)
+f<-ggplot_build(f)
+f<-f$data[[1]]
+# Adding the percent count of each of the row of the data in a new column.
+f$perc<-f$count*100/sum(f$count)
+# Adding a column containing the label for each of the groups.
+f$label<-levels(as.factor(clean$targtype1_txt))
+
+# Using the a above create dataset to plot a plotly pie chart.
+plot7<-plot_ly( data =f , labels =f$label , values =f$perc , type = "pie", textinfo = "label+percent", insidetextorientation = "radial",title="Pie Chart on the distribution of Target Type")
+plot7
+
+ 
+```  
+
+<br/>  
+
+### Observations:  
+
+Private Citizens and Property is the most commonly targeted group forllowed by the Military, Police,the general Government and Business.  
+
+
+## A better visualization of the terrorism data across the world.   
+```{r echo=FALSE}
+# Storing the world map data in a variable called world_map.
+world_map<-map_data("world")
+# Using the world_map data to plot teh world map using ggplot().
+plot8<-ggplot()+
+  geom_polygon(data=world_map,aes(x=long,y=lat,group=group),col="black",fill="#80c904")+
+  theme(
+    panel.background = element_rect(fill = '#59bfff')
+  )+
+# Using the latitudes and longitudes from the cleaned dataset to add points representing terrorism activities.
+  geom_point(data=clean,aes(x=longitude,y=latitude),alpha=0.01)+
+  scale_x_continuous(labels = function(x) format(x, scientific = FALSE))+
+  coord_cartesian(x=c(-180,180),y=c(-90,90))
+# Calling the plotted map.
+(plot8)
+
+```  
+
+### Observation:
+We observe that there's a high density of clustering around the Middle-East, Southern Asia, the Andean Regions of South America, few parts of Central Africa, Southern Europe, and  South-Eastern Asia.
+
